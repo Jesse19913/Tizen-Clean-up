@@ -213,6 +213,7 @@
             { label: 'Read inputs', run: labReadInputs },
             { label: 'Open Samsung TV viewer only', run: function () { runLogged('Open TV viewer', Inputs.openViewer()); } }
         ];
+        if (window.Sound) actions = actions.concat(Sound.actions());
         if (window.RenderProbe) actions = actions.concat(RenderProbe.actions());
         inputs().forEach(function (input) {
             var item = { kind: 'input', hdmi: input.hdmi, label: input.label };

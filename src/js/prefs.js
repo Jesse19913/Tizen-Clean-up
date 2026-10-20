@@ -12,6 +12,10 @@
         var cfg = window.LAUNCHER_CONFIG || {};
         var theme = cfg.theme || {};
         return {
+            sound: {
+                enabled: cfg.sound ? cfg.sound.enabled !== false : true,
+                preset: cfg.sound && cfg.sound.preset || 'soft'
+            },
             wallpaper: {
                 mode: theme.wallpaper ? 'photo' : 'off',   // 'off' | 'photo' | 'rotate'
                 photo: theme.wallpaper || 'forest',
@@ -42,6 +46,7 @@
         try {
             var saved = JSON.parse(localStorage.getItem(KEY));
             if (saved) {
+                merge(prefs.sound, saved.sound);
                 merge(prefs.wallpaper, saved.wallpaper);
                 merge(prefs.appearance, saved.appearance);
                 if (Array.isArray(saved.home) && saved.home.length) prefs.home = saved.home;

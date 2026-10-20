@@ -43,6 +43,29 @@ window.LAUNCHER_CONFIG = {
         wallpaper: null
     },
 
+    /*
+     * EXPERIMENTAL navigation sound. Synthesised, so there is no audio file. `move` plays when
+     * focus changes, `edge` when it cannot (the end of a row). Tune by ear in the browser
+     * preview; `volume` is 0–1 and sits on top of the TV's own volume.
+     *
+     * Whether this is worth keeping depends on the TV's audio latency: run
+     * "Sound: report audio latency" in the Lab screen. Set enabled to false to silence it.
+     */
+    sound: {
+        enabled: true,
+        preset: 'soft',
+        volume: 0.08,
+        minGapMs: 45,
+        presets: {
+            soft: { label: 'Soft', freq: 620, ms: 30, type: 'sine' },
+            warm: { label: 'Warm', freq: 520, ms: 44, type: 'triangle' },
+            bright: { label: 'Bright', freq: 1040, ms: 30, type: 'triangle' }
+        },
+        move: { freq: 880, ms: 38, type: 'triangle' },
+        edge: { freq: 200, ms: 70, type: 'sine' },
+        select: { freq: 1320, ms: 55, type: 'triangle' }
+    },
+
     // Development only: where the Lab screen sends its logs (npm run devlog on your computer).
     // null disables it; set it to http://<your-computer-ip>:8099/log while debugging.
     devLogUrl: null

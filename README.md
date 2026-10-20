@@ -149,6 +149,8 @@ Saved on the TV in `localStorage`. They survive restarts and in-place updates, n
   reorder, remove; plus add a console.
 - **Appearance** — 24/12-hour clock, date shown/hidden, date language (English, Español, Français),
   font, app names (always / when selected / never).
+- **Navigation sound** — turn arrow-key sounds on or off, choose Soft, Warm or Bright, and preview
+  the selected tone.
 - **Samsung Home** — opens `com.samsung.tv.csfs`, from which TV settings are one press away.
   Opening `com.samsung.tv.coba.setting` directly does not work on this TV. Keep this entry: it is
   the route back if you have redirected the Home button.

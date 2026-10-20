@@ -85,6 +85,7 @@
             { label: 'Apps on Home', value: Home.homeItems().length + ' apps', run: function () { UI.show('homeapps'); } },
             { label: 'Consoles', value: shown + ' on Home', run: function () { UI.show('consoles'); } },
             { label: 'Appearance', value: Appearance.font(a.font).label + ' · ' + (a.clock === '12h' ? '12-hour' : '24-hour'), run: function () { UI.show('appearance'); } },
+            { label: 'Navigation sound', value: soundSummary(), run: function () { UI.show('sound-settings'); } },
             { label: 'Samsung Home', value: 'Smart Hub and TV settings', run: openSamsungHome },
             { label: 'Advanced', value: 'Refresh, reset, Lab', run: function () { UI.show('advanced'); } }
         ];
@@ -196,6 +197,65 @@
         Home.updateClock();
         renderAppearance();
         UI.refresh();
+    }
+
+    // ---------- Navigation sound
+
+    function soundSummary() {
+        var p = Prefs.get().sound;
+        return p.enabled ? 'On · ' + Sound.presetLabel() : 'Off';
+    }
+
+    function renderSound() {
+        var p = Prefs.get().sound;
+        var body = $('sound-body');
+        body.innerHTML = '';
+
+        var enabledBlock = el('div', 'setting-block');
+        enabledBlock.appendChild(el('h2', '', 'Sound'));
+        var enabledChips = el('div', 'chips');
+        enabledChips.appendChild(chip('On', p.enabled, { kind: 'enabled', value: true }));
+        enabledChips.appendChild(chip('Off', !p.enabled, { kind: 'enabled', value: false }));
+        enabledBlock.appendChild(enabledChips);
+        body.appendChild(enabledBlock);
+
+        var presetBlock = el('div', 'setting-block');
+        presetBlock.appendChild(el('h2', '', 'Style'));
+        var presetChips = el('div', 'chips');
+        Sound.presetOptions().forEach(function (preset) {
+            presetChips.appendChild(chip(preset.label, p.preset === preset.key,
+                { kind: 'preset', value: preset.key }));
+        });
+        presetBlock.appendChild(presetChips);
+        body.appendChild(presetBlock);
+
+        var previewBlock = el('div', 'setting-block');
+        previewBlock.appendChild(el('h2', '', 'Try it'));
+        var previewChips = el('div', 'chips');
+        previewChips.appendChild(chip('Preview selected sound', false, { kind: 'preview' }));
+        previewBlock.appendChild(previewChips);
+        body.appendChild(previewBlock);
+    }
+
+    function activateSound(item) {
+        var p = Prefs.get().sound;
+        if (item.kind === 'enabled') {
+            p.enabled = item.value;
+            Prefs.save();
+            renderSound();
+            UI.refresh();
+            if (p.enabled) Sound.preview();
+            return;
+        }
+        if (item.kind === 'preset') {
+            p.preset = item.value;
+            Prefs.save();
+            renderSound();
+            UI.refresh();
+            Sound.preview();
+            return;
+        }
+        if (item.kind === 'preview') Sound.preview();
     }
 
     // ---------- Apps on Home editor (two columns, custom navigation)
@@ -530,6 +590,14 @@
             onShow: renderAppearance,
             activate: activateAppearance,
             hints: [['OK', 'Select'], ['Back', 'Settings']]
+        });
+
+        UI.register('sound-settings', {
+            el: $('sound-settings'),
+            rows: function () { return chipRows($('sound-body')); },
+            onShow: renderSound,
+            activate: activateSound,
+            hints: [['OK', 'Select / Preview'], ['Back', 'Settings']]
         });
 
         UI.register('homeapps', {

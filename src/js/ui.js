@@ -154,6 +154,9 @@
         if (!r.length) return;
         var f = focus[current];
         focusedEl();
+        // Remembered so the sound can tell a real move from a clamp at the edge of a row.
+        var wasR = f.r;
+        var wasC = f.c;
         if (dc) f.c = clamp(f.c + dc, 0, r[f.r].length - 1);
         if (dr) {
             var nr = clamp(f.r + dr, 0, r.length - 1);
@@ -173,6 +176,7 @@
                 f.c = best;
             }
         }
+        if (window.Sound) Sound.play(f.r === wasR && f.c === wasC ? 'edge' : 'move');
         refresh();
     }
 
