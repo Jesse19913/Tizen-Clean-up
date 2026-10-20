@@ -7,9 +7,8 @@ and nothing else.
 
 *The browser preview, with the bundled Manrope font and the "Milky Way" wallpaper.*
 
-I built this for one TV in my living room — a Samsung Q70B on Tizen 6.5 — because its own home
-screen had become a shop. It does what I want: the apps I use, the consoles I own, on a dark
-background, driven by the normal remote. I am sharing it as a starting point rather than a product.
+I built this for one TV in my living room, a Samsung Q70B on Tizen 6.5, because its own home
+screen had become a shop. It does what I want: the apps I use, the consoles I own, driven by the normal remote. I am sharing it as a starting point rather than a product.
 
 **Use it at your own risk.** The optional Home-button setup changes TV preferences that Samsung
 does not document. See [the setup guide](docs/setup-tv.md) before using it.
@@ -43,7 +42,7 @@ are all real, while launching apps and switching HDMI inputs only do something o
 Everything in [`src/js/config.js`](src/js/config.js) is meant to be edited: which apps appear, which
 consoles and on which HDMI ports, how an input tile switches the TV, the locale, the starting
 wallpaper. Most of it is also editable from the launcher's own Settings once it is on the TV, and
-the TV's copy wins — `config.js` only supplies the defaults.
+the TV's copy wins (`config.js` only supplies the defaults).
 
 Beyond config: tile colours and brand marks in [`src/js/brands.js`](src/js/brands.js), the whole
 look in [`src/css/style.css`](src/css/style.css), and your own photos as wallpapers.
@@ -74,7 +73,7 @@ and power-on changes, with the recovery steps for each.
 
 Installing the launcher is reversible by uninstalling it. The Home-button change is reversible
 with the saved per-device baseline, but it rewrites undocumented platform preferences. The
-launcher works fine without that change — open it from the app list like any other app.
+launcher works fine without that change, open it from the app list like any other app.
 
 Evidence and limits:
 
@@ -115,7 +114,7 @@ Blue = Lab.
 ```
 src/                  everything that goes into the .wgt
   config.xml          Tizen manifest (app id, privileges)
-  css/style.css       1920x1080 stage; no blur, filters or blurred shadows
+  css/style.css       1920x1080 stage; performance rules measured, not assumed (see its header)
   fonts/              Manrope, Inter, Outfit, DM Sans (OFL), bundled so nothing loads from the network
   img/marks/          brand marks (Simple Icons CC0, Custom Brand Icons MIT; see SOURCES.md)
   img/tiles/          marks recoloured per brand (generated at build)
@@ -131,6 +130,7 @@ src/                  everything that goes into the .wgt
   js/home.js          Home, All apps, Lab
   js/settings.js      Settings pages
   js/devlog.js        development log (Lab screen, optional upload to your computer)
+  js/render-probe.js  measures what this TV can actually render (Lab screen only)
   js/boot.js          start-up
   js/tizen-mock.js    fake Tizen APIs for the browser preview (inactive on the TV)
 scripts/              build.sh, serve.mjs, devlog-server.mjs, fetch-assets.mjs, make-icon.mjs
@@ -188,6 +188,33 @@ tile is green when the TV reports that port as connected.
 To collect Lab results on your computer, point `devLogUrl` in `config.js` at it and run
 `npm run devlog`; entries land in `logs/tv.jsonl`. Set it to `null` to disable, which is the
 sensible setting for a TV you are not actively debugging.
+
+### What the hardware can afford
+
+The TV will not tell you what it can render, so the Lab screen measures it. **Render probe:
+everything** walks a focus ring along eight tiles — the same work as moving along the apps row —
+and counts frames against the wall clock for each of four stages. Results land in the log.
+
+On the reference Q70B (Chromium 85, 4 cores, 2 GB), baseline is 59.5 fps / 16.8 ms with no
+dropped frames, and:
+
+| | Measured | |
+| --- | --- | --- |
+| Blurred `box-shadow`, 8 tiles at `0 40px 100px` | 59.5 fps, 0 dropped | free |
+| 3 live radial-gradient layers, 1100 px | 4.6 fps, 178.7 ms, 88/90 dropped | never at runtime |
+
+So soft shadows are fine and background glows are not. Bake a gradient into the wallpaper at
+build time instead — `scripts/prepare-wallpapers.mjs` already does exactly this for the
+readability scrim.
+
+The probe also reports the engine and its CSS support, which saves guessing: Chromium 85 has
+grid, gap, sticky and `clamp()`, but no `inset`, `aspect-ratio`, `overflow: clip`, individual
+transform properties, `color-mix()`, container queries or `:has()`.
+
+Re-run it on your own TV before trusting any of these numbers; that is the whole point of it.
+Two of my own early runs produced nonsense — `requestAnimationFrame` on this engine stops
+tracking vsync and fires callbacks in batches, which reads as absurdly high frame rates, so the
+probe now measures against `Date.now()` and flags any sample faster than the panel refreshes.
 
 ### Privileges
 

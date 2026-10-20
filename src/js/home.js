@@ -213,6 +213,7 @@
             { label: 'Read inputs', run: labReadInputs },
             { label: 'Open Samsung TV viewer only', run: function () { runLogged('Open TV viewer', Inputs.openViewer()); } }
         ];
+        if (window.RenderProbe) actions = actions.concat(RenderProbe.actions());
         inputs().forEach(function (input) {
             var item = { kind: 'input', hdmi: input.hdmi, label: input.label };
             var name = input.label + ' (HDMI ' + input.hdmi + ')';
@@ -379,6 +380,7 @@
         UI.register('home', {
             el: $('home'),
             startRow: 1,
+            hints: [['OK', 'Open'], ['▲', 'Settings']],
             rows: function () {
                 return [[$('gear')], UI.children($('apps-row')), UI.children($('inputs-row'))];
             },
@@ -397,13 +399,15 @@
             el: $('all'),
             rows: function () { return UI.chunk(UI.children($('all-grid')), GRID_COLS); },
             onShow: renderAll,
-            activate: launchApp
+            activate: launchApp,
+            hints: [['OK', 'Open'], ['Back', 'Home']]
         });
 
         UI.register('lab', {
             el: $('lab'),
             rows: function () { return UI.children($('lab-list')).map(function (li) { return [li]; }); },
-            activate: function (item) { item.run(); }
+            activate: function (item) { item.run(); },
+            hints: [['OK', 'Run'], ['Back', 'Home']]
         });
     }
 

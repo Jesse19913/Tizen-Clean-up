@@ -11,6 +11,9 @@
  *   onBack()    return true if Back was handled inside the view
  *   onFocus(el) called after focus moves
  *   overlay     shown on top of the previous view instead of replacing it
+ *   hints       remote keys to show along the bottom: [['OK', 'Open'], ['Back', 'Home']].
+ *               A function instead of an array is called on every show, for hints that depend
+ *               on state. Omit for no bar.
  */
 (function () {
     'use strict';
@@ -50,6 +53,30 @@
         focus[name] = { r: def.startRow || 0, c: 0, last: {} };
     }
 
+    /*
+     * The hint bar sits outside the views so it survives view switches. An overlay keeps its own
+     * hints if it declares them and otherwise leaves the bar beneath it alone, so a pop-up over
+     * Home does not blank Home's shortcuts.
+     */
+    function renderHints(def) {
+        var bar = $('hints');
+        if (!bar) return;
+        var list = typeof def.hints === 'function' ? def.hints() : def.hints;
+        if (!list && def.overlay) return;
+        bar.innerHTML = '';
+        if (!list || !list.length) {
+            bar.classList.add('hidden');
+            return;
+        }
+        list.forEach(function (h) {
+            var group = el('div', 'hint');
+            group.appendChild(el('span', 'hint-key', h[0]));
+            group.appendChild(el('span', 'hint-label', h[1]));
+            bar.appendChild(group);
+        });
+        bar.classList.remove('hidden');
+    }
+
     // opts.back: returning to this view (do not remember where we came from)
     function show(name, opts) {
         opts = opts || {};
@@ -64,6 +91,8 @@
             v.el.classList.toggle('hidden', !visible);
         });
         if (def.onShow) def.onShow(opts);
+        // After onShow, so hints that read state see the state this view just rendered.
+        renderHints(def);
         refresh();
     }
 
@@ -230,6 +259,7 @@
         register('menu', {
             el: $('menu'),
             overlay: true,
+            hints: [['OK', 'Select'], ['Back', 'Close']],
             rows: function () { return children($('menu-list')).map(function (li) { return [li]; }); },
             activate: function (o) {
                 show(views.menu.from, { back: true });
@@ -253,6 +283,8 @@
         setFocus: setFocus,
         focusOn: focusOn,
         resetScroll: resetScroll,
+        // For state changes that redraw hints without switching view.
+        refreshHints: function () { renderHints(views[current]); },
         toast: toast,
         menu: menu,
         init: init,

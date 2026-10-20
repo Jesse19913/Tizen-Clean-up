@@ -43,14 +43,15 @@
         });
     }
 
-    function registerList(name, entries) {
+    function registerList(name, entries, hints) {
         var view = $(name);
         var list = view.querySelector('ul');
         UI.register(name, {
             el: view,
             rows: function () { return UI.children(list).map(function (li) { return [li]; }); },
             onShow: function () { renderList(list, entries()); },
-            activate: function (item) { item.run(); }
+            activate: function (item) { item.run(); },
+            hints: hints
         });
         return function () { renderList(list, entries()); };
     }
@@ -240,6 +241,19 @@
         edLoad();
     }
 
+    /*
+     * Focus plus hints, but the hint bar is only rebuilt when its content would actually differ.
+     * Arrowing through the list is the hot path on this screen and should not churn the DOM.
+     */
+    function edRefresh() {
+        var sig = ed.col + '/' + (ed.moving >= 0);
+        if (sig !== ed.hintSig) {
+            ed.hintSig = sig;
+            UI.refreshHints();
+        }
+        UI.refresh();
+    }
+
     function edKey(k) {
         var moving = ed.moving >= 0;
         if (k === KEY.UP || k === KEY.DOWN) {
@@ -256,14 +270,14 @@
             } else {
                 ed.idx[ed.col] += d;
             }
-            UI.refresh();
+            edRefresh();
             return true;
         }
         if (k === KEY.LEFT || k === KEY.RIGHT) {
             if (!moving) {
                 var col = k === KEY.LEFT ? 0 : 1;
                 if ([$('ed-home'), $('ed-other')][col].children.length) ed.col = col;
-                UI.refresh();
+                edRefresh();
             }
             return true;
         }
@@ -284,7 +298,7 @@
                 edRender();
                 UI.toast('Added ' + added.label + ' to Home');
             }
-            UI.refresh();
+            edRefresh();
             return true;
         }
         return false;
@@ -497,22 +511,25 @@
     // ---------- Registration
 
     function init() {
-        registerList('settings', overviewEntries);
-        registerList('advanced', advancedEntries);
-        renderConsoles = registerList('consoles', consoleEntries);
+        registerList('settings', overviewEntries, [['OK', 'Change'], ['Back', 'Home']]);
+        registerList('advanced', advancedEntries, [['OK', 'Run'], ['Back', 'Settings']]);
+        renderConsoles = registerList('consoles', consoleEntries,
+            [['OK', 'Options'], ['Back', 'Settings']]);
 
         UI.register('bg', {
             el: $('bg-settings'),
             rows: function () { return chipRows($('bg-body')); },
             onShow: renderBackground,
-            activate: activateBackground
+            activate: activateBackground,
+            hints: [['OK', 'Select'], ['Back', 'Settings']]
         });
 
         UI.register('appearance', {
             el: $('appearance'),
             rows: function () { return chipRows($('appearance-body')); },
             onShow: renderAppearance,
-            activate: activateAppearance
+            activate: activateAppearance,
+            hints: [['OK', 'Select'], ['Back', 'Settings']]
         });
 
         UI.register('homeapps', {
@@ -528,13 +545,24 @@
             },
             focusEl: edFocusEl,
             onKey: edKey,
-            onBack: edBack
+            onBack: edBack,
+            hints: function () {
+                if (ed.moving >= 0) {
+                    return [['▲ ▼', 'Reorder'], ['OK', 'Drop here'], ['Back', 'Cancel']];
+                }
+                return [
+                    ['OK', ed.col === 0 ? 'Options' : 'Add to Home'],
+                    ['◀ ▶', 'Switch column'],
+                    ['Back', 'Settings']
+                ];
+            }
         });
 
         UI.register('rename', {
             el: $('rename'),
             overlay: true,
             focusEl: function () { return $('rename-input'); },
+            hints: [['OK', 'Save'], ['Back', 'Cancel']],
             onShow: function () {
                 setTimeout(function () {
                     var input = $('rename-input');
