@@ -107,7 +107,10 @@ node scripts/prepare-wallpapers.mjs <folder>   # regenerate wallpapers from your
 | Back | one level back (does nothing on Home) |
 
 Hidden shortcuts: Red = All apps, Green = next wallpaper, Yellow (in All apps) = show system apps,
-Blue = Lab.
+Blue = Lab. On Home, Left and Right alternating three times (◀ ▶ ◀ ▶ ◀ ▶) starts the hidden game;
+OK / Up jumps, Down ducks, Back returns Home. The code alternates rather than repeating a key
+because a held remote key auto-repeats, which would both break a run-based code and fire it by
+accident while sweeping along a row.
 
 ### Layout
 
