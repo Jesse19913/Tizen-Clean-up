@@ -852,3 +852,105 @@ html.preview, html.preview body {
 .probe-shadow { box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6); }
 
 .probe-focus { box-shadow: 0 0 0 5px var(--ring), 0 40px 100px rgba(0, 0, 0, 0.6); }
+
+/*
+ * Screen saver.
+ *
+ * Only `transform` and `opacity` are animated, both on elements with their own layer, so the
+ * zoom and the crossfade should be composited rather than repainted. That follows the rule at
+ * the top of this file but is not separately measured: the Lab probe times rAF intervals while
+ * JavaScript mutates the stage, and these transitions are set once and then run without the
+ * main thread, which that probe would report as a clean 60 fps whether or not the panel keeps
+ * up. Judge it by eye instead — Settings ▸ Screen saver ▸ Show it now, on the TV.
+ *
+ * What is measured is what this deliberately avoids. The design mockup's backdrop was nine
+ * radial-gradients over a linear-gradient, the shape that came back at 4.6 fps with 88 of 90
+ * frames dropped; a photo fills that role here. The one gradient left is the scrim, which is
+ * static and painted once.
+ */
+#screensaver {
+    background: #05060a;
+}
+
+.ss-photo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    opacity: 0;
+    background: center / cover no-repeat;
+    transform: scale(1);
+    transform-origin: 50% 50%;
+    transition: opacity 2000ms linear, transform 90000ms linear;
+    will-change: transform, opacity;
+}
+
+/* Rewinding the zoom for the next photo must not animate. */
+.ss-photo.ss-instant {
+    transition: none;
+}
+
+.ss-scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 420px;
+    background: linear-gradient(180deg, rgba(3, 4, 7, 0), rgba(3, 4, 7, 0.55));
+}
+
+.ss-caption {
+    position: absolute;
+    left: var(--edge);
+    bottom: 96px;
+    transition: transform 1200ms ease-out;
+}
+
+.ss-title {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(220, 224, 232, 0.75);
+}
+
+/*
+ * Four anchors, cycled every couple of minutes so nothing bright sits in one place long enough
+ * to mark the panel. They keep clear of the caption's bottom-left corner.
+ */
+.ss-clock {
+    position: absolute;
+    display: flex;
+    align-items: baseline;
+    gap: 22px;
+    transition: transform 1200ms ease-out;
+}
+
+.ss-clock.pos-0 { right: var(--edge); bottom: 96px; }
+.ss-clock.pos-1 { right: var(--edge); top: 96px; }
+.ss-clock.pos-2 { left: var(--edge); top: 96px; }
+.ss-clock.pos-3 { right: var(--edge); top: 470px; }
+
+.ss-date {
+    font-size: 30px;
+    color: rgba(220, 224, 232, 0.75);
+}
+
+.ss-time {
+    font-size: 72px;
+    font-weight: 300;
+    line-height: 1;
+    color: rgba(243, 244, 246, 0.95);
+}
+
+.ss-dark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    background: #000;
+    opacity: 0;
+    transition: opacity 10000ms linear;
+}

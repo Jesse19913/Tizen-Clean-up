@@ -105,6 +105,26 @@
             <pre id="lab-log" class="lab-log"></pre>
         </section>
 
+        <section id="screensaver-settings" class="view page hidden">
+            <header class="page-head"><h1>Screen saver</h1></header>
+            <div id="screensaver-body" class="settings-body compact"></div>
+        </section>
+
+        <!-- Two photo layers so one can decode and zoom from scratch while the other fades out. -->
+        <section id="screensaver" class="view hidden">
+            <div id="ss-photo-a" class="ss-photo"></div>
+            <div id="ss-photo-b" class="ss-photo"></div>
+            <div class="ss-scrim"></div>
+            <div id="ss-caption" class="ss-caption">
+                <div id="ss-title" class="ss-title"></div>
+            </div>
+            <div id="ss-clock" class="ss-clock pos-0">
+                <div id="ss-date" class="ss-date"></div>
+                <div id="ss-time" class="ss-time"></div>
+            </div>
+            <div id="ss-dark" class="ss-dark"></div>
+        </section>
+
         <section id="runner-game" class="view hidden">
             <canvas id="runner-canvas" width="1920" height="1080" aria-label="Fiancée runner game"></canvas>
         </section>
@@ -143,6 +163,7 @@
     <script src="js/sound.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/render-probe.js"></script>
+    <script src="js/screensaver.js"></script>
     <script src="js/home.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/runner-game.js"></script>

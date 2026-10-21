@@ -22,6 +22,12 @@
                 interval: '15m',        // see Wallpaper.INTERVALS
                 lastChange: 0
             },
+            screensaver: {
+                enabled: true,
+                delay: '5m',            // see Screensaver.DELAYS
+                photoEvery: '75s',      // see Screensaver.PHOTO_EVERY
+                dark: '1h'              // see Screensaver.DARK_AFTER
+            },
             appearance: {
                 clock: '24h',           // '24h' | '12h'
                 showDate: true,
@@ -48,6 +54,7 @@
             if (saved) {
                 merge(prefs.sound, saved.sound);
                 merge(prefs.wallpaper, saved.wallpaper);
+                merge(prefs.screensaver, saved.screensaver);
                 merge(prefs.appearance, saved.appearance);
                 if (Array.isArray(saved.home) && saved.home.length) prefs.home = saved.home;
                 if (Array.isArray(saved.inputs)) prefs.inputs = saved.inputs;

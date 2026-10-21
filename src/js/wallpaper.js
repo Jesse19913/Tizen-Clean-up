@@ -75,7 +75,11 @@
     function start() {
         apply();
         homeShown();
+        // The screen saver has its own photo cycle and covers Home completely, so rotating
+        // underneath it would only decode images nobody can see — and move the photo Home
+        // comes back to.
         setInterval(function () {
+            if (window.Screensaver && Screensaver.isOpen()) return;
             if (!document.hidden && due()) next();
         }, 5 * 1000);
     }

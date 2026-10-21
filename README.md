@@ -127,6 +127,7 @@ src/                  everything that goes into the .wgt
   js/apps.js          list / filter / launch via tizen.application
   js/inputs.js        HDMI via tizen.systeminfo + tizen.tvwindow
   js/wallpaper.js     wallpaper display and rotation
+  js/screensaver.js   idle screen saver: photos, slow zoom, clock
   js/appearance.js    clock, date and font settings
   js/prefs.js         settings saved on the TV
   js/ui.js            screens, focus, keys, toast, pop-up menu
@@ -154,6 +155,9 @@ Saved on the TV in `localStorage`. They survive restarts and in-place updates, n
   font, app names (always / when selected / never).
 - **Navigation sound** — turn arrow-key sounds on or off, choose Soft, Warm or Bright, and preview
   the selected tone.
+- **Screen saver** — on or off, start after 3/5/10/15 min idle on Home, photo change every
+  60/75/90 s while Background is on Rotate, go dark after 30 min / 1 hour / 2 hours / never, and
+  show it now.
 - **Samsung Home** — opens `com.samsung.tv.csfs`, from which TV settings are one press away.
   Opening `com.samsung.tv.coba.setting` directly does not work on this TV. Keep this entry: it is
   the route back if you have redirected the Home button.
@@ -166,6 +170,24 @@ build time, so the TV only ever draws one plain JPEG on its own layer. Drop phot
 run `node scripts/prepare-wallpapers.mjs <folder>`; friendly names and crop positions for known
 files live in that script. Current photos are from Unsplash; credits appear when you switch with
 Green.
+
+### Screen saver
+
+After a few minutes with no input on Home it shows the wallpapers full screen with the clock and
+the photo's name in the corners. Any button closes it, and that press does nothing else. It never
+appears over a console input, another screen or the hidden game.
+
+Everything in it moves, because a clock parked in one corner for an hour is a burn-in risk: the
+photo zooms about 6% over 90 seconds and then reverses, the corner text shifts a few pixels on
+each photo change, the clock moves to another corner every two and a half minutes, and the whole
+thing fades to black once the configured hour is up. Photos follow the **Background** setting —
+Rotate cycles them, a single photo is held, Off leaves just the clock — using the screen saver's
+own position, so it never rewrites the wallpaper Home comes back to.
+
+Only `transform` and `opacity` animate, which the compositor can run without repainting. That is
+the rule from the measurements below rather than a separate measurement: the Lab probe times a
+JavaScript repaint loop, and a CSS transition that runs off the main thread would read as a clean
+60 fps there whether or not the panel keeps up, so judge this one by eye on the TV.
 
 ### Apps
 
