@@ -85,3 +85,33 @@ window.LAUNCHER_CONFIG = {
     // null disables it; set it to http://<your-computer-ip>:8099/log while debugging.
     devLogUrl: null
 };
+
+/*
+ * Local overrides from js/config.local.js, which is gitignored and loaded just before this file.
+ * That is where values specific to one TV belong — coordinates, a devlog address — so this file
+ * can stay in the repository with nulls in it. Nothing to strip before a push, nothing to put
+ * back before a build, and the overlay reaches the browser preview and the .wgt alike.
+ *
+ * Merged one level deep, so a local file can set weather.latitude without restating the rest of
+ * the block. Arrays (apps, inputs) and plain values replace the default outright.
+ */
+(function () {
+    'use strict';
+
+    var local = window.LAUNCHER_LOCAL;
+    if (!local) return;
+
+    function plainObject(v) {
+        return v && typeof v === 'object' && !Array.isArray(v);
+    }
+
+    Object.keys(local).forEach(function (key) {
+        if (plainObject(local[key]) && plainObject(window.LAUNCHER_CONFIG[key])) {
+            Object.keys(local[key]).forEach(function (inner) {
+                window.LAUNCHER_CONFIG[key][inner] = local[key][inner];
+            });
+        } else {
+            window.LAUNCHER_CONFIG[key] = local[key];
+        }
+    });
+})();

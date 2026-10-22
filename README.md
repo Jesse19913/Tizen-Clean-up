@@ -47,6 +47,12 @@ the TV's copy wins (`config.js` only supplies the defaults).
 Beyond config: tile colours and brand marks in [`src/js/brands.js`](src/js/brands.js), the whole
 look in [`src/css/style.css`](src/css/style.css), and your own photos as wallpapers.
 
+Anything specific to your own TV — weather coordinates, a devlog address — belongs in
+`src/js/config.local.js` instead. That file is gitignored and merged over `config.js` one level
+deep, so the tracked file keeps its nulls while the local one reaches both the browser preview and
+the packaged `.wgt`. Nothing to strip before a push, nothing to restore before a build. Copy
+[`config.local.example.js`](src/js/config.local.example.js) to start.
+
 ## Coding agent prompt
 
 This project was largely built with coding agents, and adapting it is a reasonable thing to hand to
@@ -123,6 +129,7 @@ src/                  everything that goes into the .wgt
   img/tiles/          marks recoloured per brand (generated at build)
   img/wallpapers/     1920x1080 wallpapers with the readability scrim baked in (generated)
   js/config.js        your apps, consoles, HDMI method, locale, theme
+  js/config.local.js  gitignored per-TV overrides, merged over config.js (not in the repo)
   js/brands.js        tile colours and marks per brand
   js/apps.js          list / filter / launch via tizen.application
   js/inputs.js        HDMI via tizen.systeminfo + tizen.tvwindow
@@ -178,7 +185,7 @@ After a few minutes with no input on Home it shows the wallpapers full screen wi
 weather and the photo's name in the corners. Any button closes it, and that press does nothing else. It never
 appears over a console input, another screen or the hidden game.
 
-The weather is off until you put coordinates in `config.js`. It comes from
+The weather is off until you put coordinates in `config.local.js` (see **What you can change**). It comes from
 [Open-Meteo](https://open-meteo.com/), which needs no API key, and there is deliberately no
 Settings page for it: the TV does not move, and coordinates are not something you type with a
 remote. The reading is cached in `localStorage` so the screen saver opens with real numbers even

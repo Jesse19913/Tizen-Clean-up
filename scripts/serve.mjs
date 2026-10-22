@@ -1,9 +1,17 @@
 // Serves src/ for desktop preview. Arrow keys + Enter navigate, Esc/Backspace = Back.
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile, access } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..', 'src');
+
+// index.html always loads the gitignored local overrides; make sure there is something to load.
+const localConfig = join(root, 'js', 'config.local.js');
+try {
+    await access(localConfig);
+} catch {
+    await writeFile(localConfig, '/* No local overrides. See config.local.example.js. */\n');
+}
 const port = Number(process.env.PORT) || 8080;
 const types = {
     '.html': 'text/html; charset=utf-8',

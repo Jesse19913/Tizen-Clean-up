@@ -28,6 +28,10 @@ signature*.xml
 .env
 .env.*
 
+# Per-TV config: coordinates, devlog address. config.js keeps the nulls and this overrides them,
+# so nothing has to be stripped before a push. See src/js/config.local.example.js.
+src/js/config.local.js
+
 # native helper build output (device-specific; build it yourself)
 native/**/bin/
 native/**/obj/
