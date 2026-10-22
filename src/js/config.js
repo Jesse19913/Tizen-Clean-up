@@ -44,6 +44,21 @@ window.LAUNCHER_CONFIG = {
     },
 
     /*
+     * Weather shown in the screen saver's corner, from Open-Meteo. No API key and nothing to
+     * keep secret, so this is the whole setup: put your own coordinates here (two decimals is
+     * plenty, and is also about as precise as you want a public request to be). Leave them null
+     * and the widget never appears.
+     *
+     * There is no Settings page for this on purpose — the TV does not move, and coordinates are
+     * not something you type with a remote.
+     */
+    weather: {
+        latitude: null,
+        longitude: null,
+        unit: 'celsius'         // 'celsius' | 'fahrenheit'
+    },
+
+    /*
      * EXPERIMENTAL navigation sound. Synthesised, so there is no audio file. `move` plays when
      * focus changes, `edge` when it cannot (the end of a row). Tune by ear in the browser
      * preview; `volume` is 0–1 and sits on top of the TV's own volume.

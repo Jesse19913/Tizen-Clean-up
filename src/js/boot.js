@@ -15,6 +15,7 @@
     UI.init();
     Settings.init();
     Screensaver.init();
+    Weather.start();
     Home.init();
 
     // Preview only: open a screen directly, e.g. http://localhost:8080/#settings

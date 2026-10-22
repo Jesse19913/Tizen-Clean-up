@@ -43,17 +43,44 @@
         });
     }
 
-    function registerList(name, entries, hints) {
+    /*
+     * A two-column list fills the first column before the second, so visual row r holds items
+     * r and r + rowCount. The focus grid has to be built that way round or Down would jump
+     * across columns.
+     */
+    function columnRows(items) {
+        var rowCount = Math.ceil(items.length / 2);
+        var rows = [];
+        for (var r = 0; r < rowCount; r++) {
+            var row = [items[r]];
+            if (items[r + rowCount]) row.push(items[r + rowCount]);
+            rows.push(row);
+        }
+        return rows;
+    }
+
+    function registerList(name, entries, hints, twoColumn) {
         var view = $(name);
         var list = view.querySelector('ul');
+        var render = function () {
+            renderList(list, entries());
+            // Set in JS so the split follows the number of entries rather than a hard-coded four.
+            if (twoColumn) {
+                list.style.gridTemplateRows =
+                    'repeat(' + Math.ceil(list.children.length / 2) + ', auto)';
+            }
+        };
         UI.register(name, {
             el: view,
-            rows: function () { return UI.children(list).map(function (li) { return [li]; }); },
-            onShow: function () { renderList(list, entries()); },
+            rows: function () {
+                var items = UI.children(list);
+                return twoColumn ? columnRows(items) : items.map(function (li) { return [li]; });
+            },
+            onShow: render,
             activate: function (item) { item.run(); },
             hints: hints
         });
-        return function () { renderList(list, entries()); };
+        return render;
     }
 
     var opening = false;
@@ -635,7 +662,8 @@
     // ---------- Registration
 
     function init() {
-        registerList('settings', overviewEntries, [['OK', 'Change'], ['Back', 'Home']]);
+        registerList('settings', overviewEntries,
+            [['OK', 'Change'], ['◀ ▶', 'Switch column'], ['Back', 'Home']], true);
         registerList('advanced', advancedEntries, [['OK', 'Run'], ['Back', 'Settings']]);
         renderConsoles = registerList('consoles', consoleEntries,
             [['OK', 'Options'], ['Back', 'Settings']]);

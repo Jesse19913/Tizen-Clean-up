@@ -40,11 +40,22 @@
         { key: 'never', label: 'Never', ms: 0 }
     ];
 
-    var ZOOM_MS = 90 * 1000;        // one leg of the zoom; a held photo then reverses
-    var ZOOM_TO = 1.06;
+    /*
+     * The photo drifts rather than zooms. A zoom changes the layer's raster scale, and this
+     * engine re-rasterises a scaled 1920x1080 layer in visible steps instead of compositing it
+     * smoothly — the first version of this did zoom, and on the TV it stepped badly. A translate
+     * leaves the raster alone and only changes the transform matrix, which is the one thing the
+     * compositor is certain to do per frame. The layer is laid out larger than the screen so
+     * there is something to drift into, and panning also beats zooming for burn-in: a zoom from
+     * the centre leaves the middle of the picture almost stationary.
+     */
+    var PAN_X = 160;                // overhang each side, matching .ss-photo in the stylesheet
+    var PAN_Y = 90;
+    var HELD_LEG_MS = 90 * 1000;    // one leg of the drift when a single photo is held
     var CLOCK_MOVE_MS = 150 * 1000; // "every 2-3 minutes"
     var CLOCK_POSITIONS = 4;        // .ss-clock.pos-0 .. pos-3
     var NUDGES = [[0, 0], [7, -5], [-6, 6], [4, 8]];
+    var FADE_MS = 2000;             // crossfade, also set as the default in the stylesheet
     var POLL_MS = 1000;
 
     var open = false;
@@ -57,9 +68,10 @@
     var openedAt = 0;
     var nextPhotoAt = 0;
     var nextClockMoveAt = 0;
-    var nextZoomAt = 0;
-    var zoomedIn = false;
+    var nextPanAt = 0;
+    var panSign = 1;            // flipped on each leg, so the drift alternates direction
     var nudge = 0;
+    var lastClockText = '';
     var clockPos = 0;
     var dark = false;
 
@@ -101,26 +113,39 @@
         return i < 0 ? 0 : i;
     }
 
-    // The zoom is a CSS transition: set once, run by the compositor.
-    function resetZoom(layer) {
-        layer.classList.add('ss-instant');
-        layer.style.transform = 'scale(1)';
-        // Reading a layout property flushes that, so the next transition starts from scale(1)
-        // instead of being collapsed into it.
+    // How long one leg of the drift lasts: a rotating photo drifts for exactly as long as it is up.
+    function legMs() {
+        return rotating() ? photoEvery().ms : HELD_LEG_MS;
+    }
+
+    function corner(sign) {
+        return 'translate(' + (sign * PAN_X) + 'px, ' + (sign * PAN_Y) + 'px)';
+    }
+
+    /*
+     * Place a layer at the start of its drift with no animation. The suppression has to be
+     * inline rather than a class, because startPan sets `transition` inline and an inline
+     * declaration beats a class rule.
+     */
+    function resetPan(layer, sign) {
+        layer.style.transition = 'none';
+        layer.style.transform = corner(sign);
+        // Reading a layout property flushes that, so the transition startPan restores runs from
+        // this corner instead of being collapsed into the move away from it.
         void layer.offsetWidth;
-        layer.classList.remove('ss-instant');
     }
 
-    function startZoom() {
-        zoomedIn = true;
-        nextZoomAt = Date.now() + ZOOM_MS;
-        layers[front].style.transform = 'scale(' + ZOOM_TO + ')';
-    }
-
-    function flipZoom() {
-        zoomedIn = !zoomedIn;
-        nextZoomAt = Date.now() + ZOOM_MS;
-        layers[front].style.transform = 'scale(' + (zoomedIn ? ZOOM_TO : 1) + ')';
+    /*
+     * The drift is one CSS transition per leg: set once, run by the compositor, no JavaScript
+     * per frame. Successive photos drift in opposite directions so the picture is not always
+     * sliding the same way.
+     */
+    function startPan() {
+        panSign = -panSign;
+        nextPanAt = Date.now() + legMs();
+        var layer = layers[front];
+        layer.style.transition = 'opacity ' + FADE_MS + 'ms linear, transform ' + legMs() + 'ms linear';
+        layer.style.transform = corner(panSign);
     }
 
     /*
@@ -133,7 +158,7 @@
         if (!w) {
             layers[0].style.opacity = '0';
             layers[1].style.opacity = '0';
-            nextZoomAt = 0;
+            nextPanAt = 0;
             return;
         }
         var swapped = false;
@@ -141,12 +166,16 @@
             if (swapped || token !== photoToken || !open) return;
             swapped = true;
             var back = layers[1 - front];
+            var old = layers[front];
             back.style.backgroundImage = 'url("' + w.file + '")';
-            resetZoom(back);
-            back.style.opacity = '1';
-            layers[front].style.opacity = '0';
+            // Placed at the corner startPan is about to drift away from, animation suppressed.
+            resetPan(back, panSign);
             front = 1 - front;
-            startZoom();
+            // Restores the transition before either property is given a new value, so the
+            // crossfade and the drift both animate instead of jumping.
+            startPan();
+            back.style.opacity = '1';
+            old.style.opacity = '0';
         };
         var img = new Image();
         img.onload = swap;
@@ -168,10 +197,15 @@
         }
     }
 
+    // Called every second, but only writes when the minute turns: repainting the clock text on
+    // top of a drifting photo is work the compositor does not need.
     function updateClock() {
         var d = new Date();
         var t = Appearance.time(d);
-        $('ss-time').textContent = t.time + (t.suffix ? ' ' + t.suffix : '');
+        var text = t.time + (t.suffix ? ' ' + t.suffix : '');
+        if (text === lastClockText) return;
+        lastClockText = text;
+        $('ss-time').textContent = text;
         $('ss-date').textContent = Prefs.get().appearance.showDate ? shortDate(d) : '';
     }
 
@@ -188,10 +222,28 @@
         $('ss-clock').style.transform = shift;
     }
 
+    // Swaps the position class without touching the others, which now include `with-weather`.
+    function setClockPos(n) {
+        var el = $('ss-clock');
+        for (var i = 0; i < CLOCK_POSITIONS; i++) el.classList.remove('pos-' + i);
+        el.classList.add('pos-' + n);
+    }
+
     function moveClock() {
         clockPos = (clockPos + 1) % CLOCK_POSITIONS;
-        $('ss-clock').className = 'ss-clock pos-' + clockPos;
+        setClockPos(clockPos);
         nextClockMoveAt = Date.now() + CLOCK_MOVE_MS;
+    }
+
+    // Hidden outright when there is no usable reading: see the note on staleness in weather.js.
+    function renderWeather() {
+        var w = window.Weather && Weather.current();
+        $('ss-clock').classList.toggle('with-weather', !!w);
+        $('ss-weather').classList.toggle('hidden', !w);
+        if (!w) return;
+        $('ss-wx-icon').innerHTML = w.icon;
+        $('ss-wx-temp').textContent = w.temp;
+        $('ss-wx-detail').textContent = w.detail;
     }
 
     // ---------- Open, tick, close
@@ -205,23 +257,28 @@
         nudge = 0;
         clockPos = 0;
         photoIndex = startIndex();
+        panSign = 1;
+        lastClockText = '';
         layers[0].style.opacity = '0';
         layers[1].style.opacity = '0';
-        resetZoom(layers[0]);
-        resetZoom(layers[1]);
+        resetPan(layers[0], panSign);
+        resetPan(layers[1], panSign);
         $('ss-dark').style.opacity = '0';
         $('ss-caption').style.transform = '';
-        $('ss-clock').className = 'ss-clock pos-0';
+        setClockPos(0);
         $('ss-clock').style.transform = '';
 
         var now = Date.now();
         openedAt = now;
         nextPhotoAt = now + photoEvery().ms;
         nextClockMoveAt = now + CLOCK_MOVE_MS;
-        nextZoomAt = 0;
+        nextPanAt = 0;
 
         UI.show('screensaver');
         updateClock();
+        // Shows the cached reading at once, and asks for a new one only if the hour is up.
+        renderWeather();
+        if (window.Weather) Weather.refresh();
         var w = photoAt(photoIndex);
         caption(w);
         showPhoto(w);
@@ -249,8 +306,9 @@
             caption(w);
             nudgeText();
             showPhoto(w);
-        } else if (nextZoomAt && now >= nextZoomAt) {
-            flipZoom();
+        } else if (nextPanAt && now >= nextPanAt) {
+            // A held photo has reached the far corner; send it back the other way.
+            startPan();
         }
     }
 
@@ -292,6 +350,12 @@
 
     function init() {
         layers = [$('ss-photo-a'), $('ss-photo-b')];
+        // A reading that lands mid-session should appear without waiting for the next photo.
+        if (window.Weather) {
+            Weather.onUpdate(function () {
+                if (open) renderWeather();
+            });
+        }
         UI.register('screensaver', {
             el: $('screensaver'),
             hints: [],

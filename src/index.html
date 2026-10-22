@@ -41,7 +41,7 @@
 
         <section id="settings" class="view page hidden">
             <header class="page-head"><h1>Settings</h1></header>
-            <ul class="settings-list"></ul>
+            <ul class="settings-list two-col"></ul>
         </section>
 
         <section id="bg-settings" class="view page hidden">
@@ -119,8 +119,17 @@
                 <div id="ss-title" class="ss-title"></div>
             </div>
             <div id="ss-clock" class="ss-clock pos-0">
-                <div id="ss-date" class="ss-date"></div>
-                <div id="ss-time" class="ss-time"></div>
+                <div id="ss-weather" class="ss-weather hidden">
+                    <div class="ss-wx-now">
+                        <span id="ss-wx-icon" class="ss-wx-icon"></span>
+                        <span id="ss-wx-temp" class="ss-wx-temp"></span>
+                    </div>
+                    <div id="ss-wx-detail" class="ss-wx-detail"></div>
+                </div>
+                <div class="ss-clock-main">
+                    <div id="ss-time" class="ss-time"></div>
+                    <div id="ss-date" class="ss-date"></div>
+                </div>
             </div>
             <div id="ss-dark" class="ss-dark"></div>
         </section>
@@ -160,6 +169,7 @@
     <script src="js/inputs.js"></script>
     <script src="js/wallpaper.js"></script>
     <script src="js/appearance.js"></script>
+    <script src="js/weather.js"></script>
     <script src="js/sound.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/render-probe.js"></script>

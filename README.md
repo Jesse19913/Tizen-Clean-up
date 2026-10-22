@@ -129,6 +129,7 @@ src/                  everything that goes into the .wgt
   js/wallpaper.js     wallpaper display and rotation
   js/screensaver.js   idle screen saver: photos, slow zoom, clock
   js/appearance.js    clock, date and font settings
+  js/weather.js       Open-Meteo reading for the screen saver corner
   js/prefs.js         settings saved on the TV
   js/ui.js            screens, focus, keys, toast, pop-up menu
   js/home.js          Home, All apps, Lab
@@ -173,21 +174,33 @@ Green.
 
 ### Screen saver
 
-After a few minutes with no input on Home it shows the wallpapers full screen with the clock and
-the photo's name in the corners. Any button closes it, and that press does nothing else. It never
+After a few minutes with no input on Home it shows the wallpapers full screen with the clock, the
+weather and the photo's name in the corners. Any button closes it, and that press does nothing else. It never
 appears over a console input, another screen or the hidden game.
 
-Everything in it moves, because a clock parked in one corner for an hour is a burn-in risk: the
-photo zooms about 6% over 90 seconds and then reverses, the corner text shifts a few pixels on
-each photo change, the clock moves to another corner every two and a half minutes, and the whole
-thing fades to black once the configured hour is up. Photos follow the **Background** setting —
-Rotate cycles them, a single photo is held, Off leaves just the clock — using the screen saver's
-own position, so it never rewrites the wallpaper Home comes back to.
+The weather is off until you put coordinates in `config.js`. It comes from
+[Open-Meteo](https://open-meteo.com/), which needs no API key, and there is deliberately no
+Settings page for it: the TV does not move, and coordinates are not something you type with a
+remote. The reading is cached in `localStorage` so the screen saver opens with real numbers even
+after the TV has been off, it refreshes at most once an hour and only when something is about to
+show it, and anything older than three hours is treated as no reading at all — an unattended
+screen should go blank rather than state yesterday's temperature as if it were now.
 
-Only `transform` and `opacity` animate, which the compositor can run without repainting. That is
-the rule from the measurements below rather than a separate measurement: the Lab probe times a
-JavaScript repaint loop, and a CSS transition that runs off the main thread would read as a clean
-60 fps there whether or not the panel keeps up, so judge this one by eye on the TV.
+Everything in it moves, because a clock parked in one corner for an hour is a burn-in risk: the
+photo drifts across 320 px while it is up and the next one drifts back the other way, the corner
+text shifts a few pixels on each photo change, the clock moves to another corner every two and a
+half minutes, and the whole thing fades to black once the configured hour is up. Photos follow the
+**Background** setting — Rotate cycles them, a single photo is held, Off leaves just the clock —
+using the screen saver's own position, so it never rewrites the wallpaper Home comes back to.
+
+Only `transform` and `opacity` animate, which the compositor can run without repainting. Not every
+composited property is equal here, though, and only running it on the TV showed it: the first
+version used a slow `scale()`, which this engine re-rasterises in visible steps rather than
+compositing, and it stepped badly enough to be unpleasant to watch. A `translate()` of the same
+layer is smooth, so the photo pans instead of zooming and the layer is laid out 320×180 larger
+than the screen to give it room. The Lab probe cannot settle this one: it times a JavaScript
+repaint loop, and a transition that runs off the main thread reads as a clean 60 fps there whether
+or not the panel keeps up. Judge it by eye on the TV.
 
 ### Apps
 
@@ -251,7 +264,7 @@ probe now measures against `Date.now()` and flags any sample faster than the pan
 | `application.info` | listing apps |
 | `tv.inputdevice` | colour keys (arrows, OK and Back need no registration) |
 | `tv.window` | HDMI source switching and display |
-| `internet` + `<access origin="*">` | the development log only |
+| `internet` + `<access origin="*">` | the Open-Meteo request and the development log |
 
 ## Contribute
 
@@ -264,7 +277,8 @@ TV where `db/menu/smart_hub/ontvsetting/auto_start` starts at `0`.
 ## Licence and credits
 
 MIT for the original code and documentation — see [LICENSE](LICENSE). Bundled fonts (OFL), Unsplash
-photos and brand marks keep their own terms. Brand names and logos belong to their owners.
+photos and brand marks keep their own terms. Weather data by [Open-Meteo](https://open-meteo.com/),
+used under its non-commercial licence. Brand names and logos belong to their owners.
 
 This project is independent and is not affiliated with Samsung or any streaming service.
 
