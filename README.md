@@ -143,6 +143,7 @@ src/                  everything that goes into the .wgt
   js/settings.js      Settings pages
   js/devlog.js        development log (Lab screen, optional upload to your computer)
   js/render-probe.js  measures what this TV can actually render (Lab screen only)
+  js/platform-probe.js  reports which tizen.* / webapis.* APIs the TV exposes (Lab screen only)
   js/boot.js          start-up
   js/tizen-mock.js    fake Tizen APIs for the browser preview (inactive on the TV)
 scripts/              build.sh, serve.mjs, devlog-server.mjs, fetch-assets.mjs, make-icon.mjs
@@ -199,6 +200,12 @@ text shifts a few pixels on each photo change, the clock moves to another corner
 half minutes, and the whole thing fades to black once the configured hour is up. Photos follow the
 **Background** setting — Rotate cycles them, a single photo is held, Off leaves just the clock —
 using the screen saver's own position, so it never rewrites the wallpaper Home comes back to.
+
+Black, rather than off, because a web app cannot turn this panel off: `tizen.power` and
+`webapis.power` are both absent on the reference TV, which **Platform probe: what APIs this TV
+exposes** in the Lab screen will confirm on yours. No privilege changes that — an absent API gives
+you nothing to be refused by. A real power-off is the TV's own Eco Solution ▸ Auto Power Off,
+driven by the same absence of remote input that started the screen saver.
 
 Only `transform` and `opacity` animate, which the compositor can run without repainting. Not every
 composited property is equal here, though, and only running it on the TV showed it: the first
