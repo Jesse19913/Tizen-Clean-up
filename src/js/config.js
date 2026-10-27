@@ -16,9 +16,7 @@ window.LAUNCHER_CONFIG = {
         { match: 'stremio', label: 'Stremio', brand: 'stremio' },
         { id: 'org.tizen.netflix-app', label: 'Netflix' },
         { id: 'org.tizen.primevideo', label: 'Prime Video' },
-        { match: 'vrt', label: 'VRT MAX', brand: 'vrtmax' },
         { match: '^youtube$|cobalt-yt', label: 'YouTube', brand: 'youtube' },
-        { match: '^(go)?play\\b', label: 'Play', brand: 'play' },
         { id: 'rJeHak5zRg.Spotify', label: 'Spotify' }
     ],
 
