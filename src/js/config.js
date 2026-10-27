@@ -21,10 +21,8 @@ window.LAUNCHER_CONFIG = {
         { match: '^(go)?play\\b', label: 'Play', brand: 'play' }
     ],
 
-    // HDMI ports are placeholders: set each to the port the console is actually plugged into
-    // (also changeable on the TV under Settings → Consoles).
     inputs: [
-        { hdmi: 4, label: 'Xbox Series X', brand: 'xbox' },
+        { hdmi: 2, label: 'Xbox Series X', brand: 'xbox' },
         { hdmi: 1, label: 'Nintendo Switch', brand: 'switch' }
     ],
 
