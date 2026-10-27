@@ -18,7 +18,8 @@ window.LAUNCHER_CONFIG = {
         { id: 'org.tizen.primevideo', label: 'Prime Video' },
         { match: 'vrt', label: 'VRT MAX', brand: 'vrtmax' },
         { match: '^youtube$|cobalt-yt', label: 'YouTube', brand: 'youtube' },
-        { match: '^(go)?play\\b', label: 'Play', brand: 'play' }
+        { match: '^(go)?play\\b', label: 'Play', brand: 'play' },
+        { id: 'rJeHak5zRg.Spotify', label: 'Spotify' }
     ],
 
     inputs: [

@@ -268,32 +268,32 @@ h1, h2 {
     margin: -32px 0 0 -32px;
 }
 
-/* Home apps row: smaller than the All apps grid so six apps and the All apps tile fit the
-   1680 px row without scrolling (7 x 212 + 6 x 32 = 1676). */
+/* Home apps row: smaller than the All apps grid so seven apps and the All apps tile fit the
+   1680 px row without scrolling (8 x 184 + 7 x 28 = 1668). */
 #apps-row .app {
-    width: 212px;
-    margin-right: 32px;
+    width: 184px;
+    margin-right: 28px;
 }
 
 #apps-row .tile {
-    height: 120px;
-    border-radius: 18px;
+    height: 104px;
+    border-radius: 16px;
 }
 
 #apps-row .label { margin-top: 14px; font-size: 24px; }
-#apps-row .wordmark { font-size: 44px; }
-#apps-row .mono { font-size: 46px; }
+#apps-row .wordmark { font-size: 40px; }
+#apps-row .mono { font-size: 40px; }
 
 #apps-row .icon {
-    width: 84px;
-    height: 84px;
-    margin: -42px 0 0 -42px;
+    width: 72px;
+    height: 72px;
+    margin: -36px 0 0 -36px;
 }
 
 #apps-row .all-tile svg {
-    width: 48px;
-    height: 48px;
-    margin: -24px 0 0 -24px;
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
 }
 
 /* Input tiles */
