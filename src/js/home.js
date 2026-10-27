@@ -470,6 +470,15 @@
                 if (state.tvMode) exitTvMode();
                 return;
             }
+            // The TV's Home button targets this app directly (see config.xml), which brings an
+            // already-running instance back to the front without restarting it. A real launcher
+            // always lands on its home screen when that happens, so do the same here rather than
+            // resuming whatever screen was left open. Switching views does not stop the hidden
+            // game, which restarts its loop and music on becoming visible, so stop it first.
+            if (!UI.isVisible('home')) {
+                if (UI.isVisible('runner-game') && window.RunnerGame) RunnerGame.stop();
+                UI.show('home');
+            }
             updateClock();
             refreshInputStatus();
             if (UI.isVisible('home')) Wallpaper.homeShown();

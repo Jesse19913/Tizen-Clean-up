@@ -265,6 +265,8 @@
         open: function (startNow) {
             UI.show('runner-game');
             if (startNow) start();
-        }
+        },
+        // For leaving the game without Back (the TV's Home button): stops the loop and music.
+        stop: hide
     };
 })();
