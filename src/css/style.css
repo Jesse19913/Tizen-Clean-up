@@ -145,19 +145,8 @@ h1, h2 {
 }
 
 /* Apps and consoles sit low so the wallpaper has the screen: consoles along the bottom, apps
-   just above them against the right edge. The apps shelf shrinks to its row (left: auto), so
-   the row stays right-aligned while it fits and scrolls from its own left edge if it ever
-   outgrows 1680 px. */
-#apps-section {
-    top: 540px;
-    left: auto;
-    right: var(--edge);
-}
-#apps-section .row-viewport {
-    width: auto;
-    max-width: 1680px;
-}
-#apps-row .app:last-child { margin-right: 0; }
+   just above them. */
+#apps-section { top: 540px; }
 #inputs-section { top: 790px; }
 
 .shelf h2 {
