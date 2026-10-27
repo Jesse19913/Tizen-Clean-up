@@ -146,6 +146,18 @@ Do these in order. Do not skip step 2.
    Test Home from another app. The helper does not change power-on settings; validate cold-start
    behavior separately before claiming it works.
 
+   **If Home goes back to Samsung's after a restart.** `apply` changes only the Home operation and
+   `home_appid`; `db/appfw/startup_appid` and `db/appfw/booting_appid_backup` keep their original
+   values, and the TV may restore Home from them at boot. That was the symptom on a QE55Q75B.
+   `Arn0HomeControl apply-boot <baseline.json>` does what `apply` does and also points those two
+   keys at the launcher, with the same guards, read-back and automatic rollback. It accepts each
+   value being either the original or already the launcher, so it can run after a restart has put
+   back some of them; `verify` does not, so on such a TV it fails on exactly the values that are
+   already the launcher, which is expected. **It is untested on any TV**: run the read-only query first, keep the
+   baseline off the TV, restart and test Home afterwards, and use `restore` (below) if anything is
+   wrong. `db/first_screen/type` is still left alone; change it only if Home still reverts after
+   `apply-boot`, and only after reading what it holds.
+
 6. **Know your way back.** `Arn0HomeControl restore <baseline.json>` restores all saved Home and
    startup values and prints `ARN0_RESTORED=`. Use the same reviewed runner that ran the query and
    apply operations.

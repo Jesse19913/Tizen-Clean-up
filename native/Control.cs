@@ -11,6 +11,15 @@ internal static class Control
     private const string MainOperation = "http://tizen.org/appcontrol/operation/main";
     private const string AutoKey = "db/menu/smart_hub/ontvsetting/auto_start";
     private const string HomeKey = "db/appfw/home_appid";
+    // apply-boot also points these at the launcher. Untested hypothesis: on a QE55Q75B the Home
+    // button went back to Samsung's Home after a restart with only HomeKey changed, and the TV may
+    // restore Home at boot from these, which apply leaves at their originals (com.samsung.tv.csfs
+    // on the reference TV). db/first_screen/type is deliberately left alone as a later step.
+    private static readonly string[] BootKeys = {
+        HomeKey,
+        "db/appfw/startup_appid",
+        "db/appfw/booting_appid_backup"
+    };
     private static readonly string[] Keys = {
         HomeKey,
         "db/appfw/startup_appid",
@@ -151,8 +160,9 @@ internal static class Control
                 Console.WriteLine("ARN0_QUERY=" + JsonSerializer.Serialize(Query()));
                 return 0;
             }
-            if (args.Length != 2 || (args[0] != "apply" && args[0] != "restore" && args[0] != "verify"))
-                throw new Exception("Use query or verify|apply|restore SNAPSHOT");
+            if (args.Length != 2 || (args[0] != "apply" && args[0] != "apply-boot" &&
+                                     args[0] != "restore" && args[0] != "verify"))
+                throw new Exception("Use query or verify|apply|apply-boot|restore SNAPSHOT");
             Snapshot original = LoadSnapshot(args[1]);
             Snapshot before = Query();
             if (args[0] == "verify")
@@ -169,7 +179,12 @@ internal static class Control
                 return 0;
             }
 
-            RequireOriginal(before, original);
+            // apply-boot may run over an earlier apply, or over a restart that put back only some of
+            // the values, so each value may already be the launcher. apply still needs a clean start.
+            bool boot = args[0] == "apply-boot";
+            if (boot) RequireRestorable(before, original);
+            else RequireOriginal(before, original);
+            string[] writes = boot ? BootKeys : new[] { HomeKey };
             string appDir = "/opt/usr/home/owner/apps_rw/" + TargetPackage;
             if (!Directory.Exists(appDir)) throw new Exception("Expected launcher package directory missing");
             if (util_is_appbooting_supported_webapp_byappid(Target) == 0)
@@ -178,12 +193,14 @@ internal static class Control
             try
             {
                 SetHome(Target);
-                SetString(HomeKey, Target);
+                foreach (string key in writes) SetString(key, Target);
                 SetInt(AutoKey, original.Autostart);
                 Snapshot after = Query();
-                if (after.Home != Target || after.Strings[HomeKey] != Target ||
-                    after.Autostart != original.Autostart)
+                if (after.Home != Target || after.Autostart != original.Autostart)
                     throw new Exception("Applied values failed verification");
+                foreach (string key in writes)
+                    if (after.Strings[key] != Target)
+                        throw new Exception("Applied values failed verification: " + key);
                 Console.WriteLine("ARN0_APPLIED=" + JsonSerializer.Serialize(after));
                 return 0;
             }
