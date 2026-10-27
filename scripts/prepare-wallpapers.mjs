@@ -3,12 +3,40 @@
 // The scrim is part of the image so the TV never composites a gradient over a photo at runtime.
 //
 //   node scripts/prepare-wallpapers.mjs ~/Downloads/backgrounds
+//
+// Needs only Node and a Chromium browser, so it runs on macOS, Windows and Linux. Chrome or Edge
+// is found in the usual places; set CHROME to the browser's executable to use another one.
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, writeFileSync, mkdirSync, rmSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, writeFileSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, extname, join, resolve } from 'node:path';
+import { basename, delimiter, extname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+function findChrome() {
+    if (process.env.CHROME) return process.env.CHROME;
+    const env = process.env;
+    const candidates = {
+        darwin: [
+            '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+            '/Applications/Chromium.app/Contents/MacOS/Chromium'
+        ],
+        // Edge ships with Windows, so it is the fallback that is always there.
+        win32: [env.PROGRAMFILES, env['PROGRAMFILES(X86)'], env.LOCALAPPDATA].filter(Boolean).flatMap((dir) => [
+            join(dir, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+            join(dir, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+        ])
+    }[process.platform] || (env.PATH || '').split(delimiter).flatMap((dir) =>
+        ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'microsoft-edge'].map((n) => join(dir, n)));
+    const found = candidates.find((p) => existsSync(p));
+    if (!found) {
+        console.error('No Chrome or Edge found. Set CHROME to the path of a Chromium-based browser.');
+        process.exit(1);
+    }
+    return found;
+}
+
+const CHROME = findChrome();
 const sourceDir = resolve(process.argv[2] || '');
 const root = resolve(import.meta.dirname, '..');
 const outDir = join(root, 'src/img/wallpapers');
@@ -48,10 +76,41 @@ const thumbDir = join(outDir, 'thumbs');
 mkdirSync(thumbDir, { recursive: true });
 const tmp = mkdtempSync(join(tmpdir(), 'wallpapers-'));
 
-// 320x180 thumbnails for the Settings picker
-function thumb(jpg, key) {
-    execFileSync('sips', ['-Z', '320', '-s', 'formatOptions', '78', jpg, '--out', join(thumbDir, key + '.jpg')], { stdio: 'ignore' });
-    return 'img/wallpapers/thumbs/' + key + '.jpg';
+function chrome(args, url) {
+    return execFileSync(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--window-size=1920,1080',
+        '--allow-file-access-from-files', '--virtual-time-budget=5000', `--user-data-dir=${join(tmp, 'profile')}`,
+        ...args, url], { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
+}
+
+// Headless Chrome only screenshots to PNG, so a second page re-encodes it in a canvas: the
+// wallpaper as JPEG at 0.82 and the 320x180 thumbnail for the Settings picker at 0.78.
+function encode(png, key) {
+    const html = join(tmp, key + '-encode.html');
+    writeFileSync(html, `<!DOCTYPE html><body><script>
+        var img = new Image();
+        img.onload = function () {
+            function jpeg(w, h, q) {
+                var c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                var g = c.getContext('2d');
+                g.imageSmoothingQuality = 'high';
+                g.drawImage(img, 0, 0, w, h);
+                return c.toDataURL('image/jpeg', q);
+            }
+            var out = document.createElement('pre');
+            out.id = 'out';
+            out.textContent = JSON.stringify([jpeg(1920, 1080, 0.82), jpeg(320, 180, 0.78)]);
+            document.body.appendChild(out);
+        };
+        img.src = ${JSON.stringify(pathToFileURL(png).href)};
+    </script></body>`);
+    const dom = chrome(['--dump-dom'], pathToFileURL(html).href).toString();
+    const m = dom.match(/<pre id="out">(.*?)<\/pre>/s);
+    if (!m) throw new Error('Could not encode ' + key + ' (did Chrome block the file?)');
+    const [full, small] = JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&'))
+        .map((url) => Buffer.from(url.split(',')[1], 'base64'));
+    writeFileSync(join(outDir, key + '.jpg'), full);
+    writeFileSync(join(thumbDir, key + '.jpg'), small);
 }
 
 // The plain "Midnight" gradient (img/bg.jpg) is what "Off" shows, so it is not in the catalog.
@@ -63,15 +122,13 @@ for (const file of readdirSync(sourceDir).sort()) {
     const title = info.title || info.key;
     const html = join(tmp, info.key + '.html');
     const png = join(tmp, info.key + '.png');
-    const src = 'file://' + join(sourceDir, file).split('/').map(encodeURIComponent).join('/');
+    const src = pathToFileURL(join(sourceDir, file)).href;
     writeFileSync(html, `<!DOCTYPE html><body style="margin:0;width:1920px;height:1080px;background:${SCRIM},` +
         `url('${src}') ${info.position || 'center'} / cover no-repeat #000"></body>`);
-    execFileSync(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--window-size=1920,1080',
-        '--allow-file-access-from-files', '--virtual-time-budget=5000', `--user-data-dir=${join(tmp, 'profile')}`,
-        `--screenshot=${png}`, 'file://' + html], { stdio: 'ignore' });
+    chrome([`--screenshot=${png}`], pathToFileURL(html).href);
+    encode(png, info.key);
     const out = join(outDir, info.key + '.jpg');
-    execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '82', png, '--out', out], { stdio: 'ignore' });
-    catalog.push({ key: info.key, title, file: 'img/wallpapers/' + info.key + '.jpg', thumb: thumb(out, info.key), credit: credit(file) });
+    catalog.push({ key: info.key, title, file: 'img/wallpapers/' + info.key + '.jpg', thumb: 'img/wallpapers/thumbs/' + info.key + '.jpg', credit: credit(file) });
     console.log(`${info.key}.jpg  ${(statSync(out).size / 1024).toFixed(0)} KB  ${credit(file)}`);
 }
 rmSync(tmp, { recursive: true, force: true });
