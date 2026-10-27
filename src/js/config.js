@@ -13,20 +13,19 @@
  */
 window.LAUNCHER_CONFIG = {
     apps: [
-        { id: 'xvvl3S1TT1.TizenTubeStandalone', label: 'YouTube', brand: 'youtube' },
-        { id: 'rJeHak5zRg.Spotify', label: 'Spotify' },
-        { id: 'Jz7aUrV2Q4.Twitch', label: 'Twitch' },
-        { id: 'E0P3lRI4H7.MYTF1', label: 'TF1+' },
+        { match: 'stremio', label: 'Stremio', brand: 'stremio' },
         { id: 'org.tizen.netflix-app', label: 'Netflix' },
         { id: 'org.tizen.primevideo', label: 'Prime Video' },
-        { id: 'MCmYXNxgcu.DisneyPlus', label: 'Disney+' },
-        { id: 'com.samsung.tv.aria-video', label: 'Apple TV' }
+        { match: 'vrt', label: 'VRT MAX', brand: 'vrtmax' },
+        { match: '^youtube$|cobalt-yt', label: 'YouTube', brand: 'youtube' },
+        { match: '^(go)?play\\b', label: 'Play', brand: 'play' }
     ],
 
+    // HDMI ports are placeholders: set each to the port the console is actually plugged into
+    // (also changeable on the TV under Settings → Consoles).
     inputs: [
-        { hdmi: 1, label: 'Nintendo Switch 2', brand: 'switch' },
-        { hdmi: 2, label: 'PlayStation 5', brand: 'playstation' },
-        { hdmi: 4, label: 'Xbox Series X', brand: 'xbox' }
+        { hdmi: 4, label: 'Xbox Series X', brand: 'xbox' },
+        { hdmi: 1, label: 'Nintendo Switch', brand: 'switch' }
     ],
 
     // How an input tile switches the TV. See README "HDMI inputs".

@@ -17,6 +17,9 @@ window.BRANDS = [
     { key: 'plex', match: /plex/i, mark: 'plex', bg: '#1f1f1f', fg: '#e5a00d' },
     { key: 'twitch', match: /twitch/i, mark: 'twitch', bg: '#9146ff', fg: '#fff' },
     { key: 'tf1', match: /tf1/i, text: 'TF1+', bg: 'linear-gradient(135deg,#071a4d,#1d4ed8)', fg: '#fff' },
+    { key: 'stremio', match: /stremio/i, text: 'Stremio', bg: 'linear-gradient(135deg,#1b1145,#7b5bf5)', fg: '#fff' },
+    { key: 'vrtmax', match: /vrt/i, text: 'VRT MAX', bg: '#111114', fg: '#fff' },
+    { key: 'play', match: /^(go)?play\b/i, text: 'Play', bg: 'linear-gradient(135deg,#2b0a3d,#e6007e)', fg: '#fff' },
     { key: 'crunchyroll', match: /crunchyroll/i, mark: 'crunchyroll', bg: '#f47521', fg: '#fff' },
 
     // Consoles (used by inputs in config.js)
