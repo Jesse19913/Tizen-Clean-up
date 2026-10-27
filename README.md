@@ -177,8 +177,8 @@ Saved on the TV in `localStorage`. They survive restarts and in-place updates, n
 Photos are cropped to 1920x1080 and darkened (top-left for the clock, bottom for the tiles) at
 build time, so the TV only ever draws one plain JPEG on its own layer. Drop photos in a folder and
 run `node scripts/prepare-wallpapers.mjs <folder>`; friendly names and crop positions for known
-files live in that script. Current photos are from Unsplash; credits appear when you switch with
-Green.
+files live in that script. The current photos are my own frogs and geckos, titled with their
+species names; the title appears when you switch with Green and in the screen saver.
 
 ### Screen saver
 
@@ -290,8 +290,8 @@ TV where `db/menu/smart_hub/ontvsetting/auto_start` starts at `0`.
 
 ## Licence and credits
 
-MIT for the original code and documentation — see [LICENSE](LICENSE). Bundled fonts (OFL), Unsplash
-photos and brand marks keep their own terms. Weather data by [Open-Meteo](https://open-meteo.com/),
+MIT for the original code and documentation — see [LICENSE](LICENSE). Bundled fonts (OFL) and brand
+marks keep their own terms. Weather data by [Open-Meteo](https://open-meteo.com/),
 used under its non-commercial licence. Brand names and logos belong to their owners.
 
 This project is independent and is not affiliated with Samsung or any streaming service.

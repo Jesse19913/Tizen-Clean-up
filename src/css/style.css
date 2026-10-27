@@ -550,18 +550,20 @@ h1, h2 {
     color: var(--bg);
 }
 
+/* Eight across so up to 16 wallpapers fit in two rows; this page does not scroll, so a third
+   row would run under the key hints (8 x 190 + 7 x 20 = 1660 of 1680 px). */
 .thumbs {
     display: grid;
-    grid-template-columns: repeat(6, 256px);
-    column-gap: 28px;
-    row-gap: 26px;
+    grid-template-columns: repeat(8, 190px);
+    column-gap: 20px;
+    row-gap: 22px;
 }
 
 .thumb img {
     display: block;
-    width: 256px;
-    height: 144px;
-    border-radius: 14px;
+    width: 190px;
+    height: 107px;
+    border-radius: 12px;
 }
 
 .thumb-title {
@@ -569,6 +571,7 @@ h1, h2 {
     font-size: 22px;
     font-weight: 500;
     color: var(--muted);
+    font-style: italic;
 }
 
 .thumb.on .thumb-title {
@@ -956,11 +959,12 @@ html.preview, html.preview body {
     transition: transform 1200ms ease-out;
 }
 
+/* Photo titles are species names, so italic and in their own case (Hyla arborea, not HYLA ARBOREA). */
 .ss-title {
-    font-size: 26px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    font-size: 30px;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: 0.02em;
     color: rgba(220, 224, 232, 0.75);
 }
 
