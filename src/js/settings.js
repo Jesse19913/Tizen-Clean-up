@@ -5,7 +5,7 @@
     var $ = UI.$;
     var el = UI.el;
     var KEY = UI.KEY;
-    var THUMB_COLS = 6;
+    var THUMB_COLS = 8;    // must match grid-template-columns of .thumbs in style.css
 
     // Samsung's on-screen keyboard (IME) sends these for its Done / Cancel buttons.
     var IME_DONE = 65376;

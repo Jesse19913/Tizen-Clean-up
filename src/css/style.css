@@ -551,7 +551,8 @@ h1, h2 {
 }
 
 /* Eight across so up to 16 wallpapers fit in two rows; this page does not scroll, so a third
-   row would run under the key hints (8 x 190 + 7 x 20 = 1660 of 1680 px). */
+   row would run under the key hints (8 x 190 + 7 x 20 = 1660 of 1680 px).
+   THUMB_COLS in settings.js must match the column count. */
 .thumbs {
     display: grid;
     grid-template-columns: repeat(8, 190px);
