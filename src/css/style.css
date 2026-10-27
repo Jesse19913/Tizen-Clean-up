@@ -144,8 +144,21 @@ h1, h2 {
     right: 0;
 }
 
-#apps-section { top: 350px; }
-#inputs-section { top: 690px; }
+/* Apps and consoles sit low so the wallpaper has the screen: consoles along the bottom, apps
+   just above them against the right edge. The apps shelf shrinks to its row (left: auto), so
+   the row stays right-aligned while it fits and scrolls from its own left edge if it ever
+   outgrows 1680 px. */
+#apps-section {
+    top: 540px;
+    left: auto;
+    right: var(--edge);
+}
+#apps-section .row-viewport {
+    width: auto;
+    max-width: 1680px;
+}
+#apps-row .app:last-child { margin-right: 0; }
+#inputs-section { top: 790px; }
 
 .shelf h2 {
     margin-bottom: 26px;
@@ -300,15 +313,15 @@ h1, h2 {
 
 .input {
     flex: none;
-    width: 536px;
-    margin-right: 36px;
+    width: 380px;
+    margin-right: 28px;
 }
 
 .input .tile {
-    height: 190px;
+    height: 120px;
     display: flex;
     align-items: center;
-    padding: 0 40px;
+    padding: 0 28px;
 }
 
 .input .mark {
@@ -316,9 +329,9 @@ h1, h2 {
     top: auto;
     left: auto;
     flex: none;
-    width: 80px;
-    height: 80px;
-    margin-right: 30px;
+    width: 56px;
+    height: 56px;
+    margin-right: 22px;
 }
 
 .input .meta {
@@ -326,7 +339,7 @@ h1, h2 {
 }
 
 .input .name {
-    font-size: 34px;
+    font-size: 26px;
     font-weight: 700;
     color: #fff;
     line-height: 1.15;
@@ -336,8 +349,8 @@ h1, h2 {
 }
 
 .input .port {
-    margin-top: 10px;
-    font-size: 24px;
+    margin-top: 6px;
+    font-size: 20px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.75);
 }
