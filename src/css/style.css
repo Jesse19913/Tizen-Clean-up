@@ -135,19 +135,27 @@ h1, h2 {
 /* Appearance options */
 .no-date #date { display: none; }
 .names-never .app .label,
-.names-focused .app .label { visibility: hidden; }
-.names-focused .app.focused .label { visibility: visible; }
+.names-focused .app .label,
+.names-never .input .name,
+.names-focused .input .name { visibility: hidden; }
+.names-focused .app.focused .label,
+.names-focused .input.focused .name { visibility: visible; }
 
-.shelf {
+/* Apps and consoles share one low row so the wallpaper has the screen. Six apps (with All
+   apps) and two consoles at 184 px fill the 1680 px line: 8 x 184 + 6 x 28 + 40 = 1680. */
+#shelves {
     position: absolute;
     left: var(--edge);
-    right: 0;
+    right: var(--edge);
+    top: 728px;
+    display: flex;
 }
 
-/* Apps and consoles sit low so the wallpaper has the screen: consoles along the bottom, apps
-   just above them. */
-#apps-section { top: 570px; }
-#inputs-section { top: 816px; }
+.shelf {
+    flex: none;
+}
+
+#inputs-section { margin-left: 40px; }
 
 .shelf h2 {
     margin-bottom: 26px;
@@ -158,7 +166,7 @@ h1, h2 {
 }
 
 .row-viewport {
-    width: 1680px;
+    width: auto;
 }
 
 .row-track {
@@ -282,7 +290,7 @@ h1, h2 {
     border-radius: 16px;
 }
 
-#apps-row .label { margin-top: 14px; font-size: 24px; }
+#apps-row .label { margin-top: 14px; font-size: 24px; letter-spacing: -0.01em; }
 #apps-row .wordmark { font-size: 40px; }
 #apps-row .mono { font-size: 40px; }
 
@@ -300,42 +308,36 @@ h1, h2 {
 
 /* Input tiles */
 
+/* Same size as the app tiles: logo centred in the tile, name underneath like an app label. */
 .input {
     flex: none;
-    width: 320px;
-    margin-right: 24px;
+    width: 184px;
+    margin-right: 28px;
 }
+
+.input:last-child,
+#apps-row .app:last-child { margin-right: 0; }
 
 .input .tile {
-    height: 96px;
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-}
-
-.input .mark {
-    position: relative;
-    top: auto;
-    left: auto;
-    flex: none;
-    width: 48px;
-    height: 48px;
-    margin-right: 18px;
+    height: 104px;
+    border-radius: 16px;
 }
 
 .input .meta {
-    min-width: 0;
+    margin-top: 14px;
 }
 
 .input .name {
     font-size: 24px;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.15;
+    font-weight: 500;
+    letter-spacing: -0.01em;    /* as the app labels; fits "Nintendo Switch" in 184 px */
+    color: var(--faint);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.input.focused .name { color: var(--fg); }
 
 /* Port and connection dot are left out on Home to keep the tiles small; the port is still
    set and shown under Settings → Consoles. */

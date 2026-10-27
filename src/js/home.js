@@ -119,8 +119,9 @@
         port.appendChild(dot);
         port.appendChild(document.createTextNode('HDMI ' + input.hdmi));
         meta.appendChild(port);
-        tile.appendChild(meta);
+        // Under the tile, like an app label, so the focus zoom does not scale the name.
         wrap.appendChild(tile);
+        wrap.appendChild(meta);
         wrap._item = { kind: 'input', hdmi: input.hdmi, label: input.label, method: input.method };
         wrap._dot = dot;
         return wrap;
@@ -410,7 +411,8 @@
             startRow: 1,
             hints: [['OK', 'Open'], ['▲', 'Settings']],
             rows: function () {
-                return [[$('gear')], UI.children($('apps-row')), UI.children($('inputs-row'))];
+                // Apps and consoles share one line on screen, so they are one row for the arrow keys.
+                return [[$('gear')], UI.children($('apps-row')).concat(UI.children($('inputs-row')))];
             },
             activate: function (item) {
                 if (item.kind === 'app') launchApp(item);
