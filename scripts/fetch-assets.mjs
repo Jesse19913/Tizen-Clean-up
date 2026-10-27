@@ -21,7 +21,10 @@ const marks = {
     playstation: SI + 'playstation.svg',
     nintendoswitch: SI + 'nintendoswitch.svg',
     disneyplus: CBI + 'disney-plus.svg',
-    xbox: CBI + 'xbox.svg'
+    xbox: CBI + 'xbox.svg',
+    // Added later, from newer releases of the same two sets.
+    stremio: 'https://cdn.jsdelivr.net/npm/simple-icons@16.36.0/icons/stremio.svg',
+    vrtmax: 'https://raw.githubusercontent.com/elax46/custom-brand-icons/72731666e020c9fa7300ed08b1031f191e077ba3/icon-svg/vrt-max.svg'
 };
 
 // All SIL Open Font License.
@@ -48,7 +51,7 @@ await mkdir(resolve(src, 'fonts'), { recursive: true });
 const lines = ['# Brand marks', '', 'Trademarks belong to their owners; used here only to identify apps and devices.', ''];
 for (const [name, url] of Object.entries(marks)) {
     await writeFile(resolve(src, 'img/marks', name + '.svg'), await get(url));
-    lines.push(`- ${name}.svg: ${url} (${url.startsWith(SI) ? 'Simple Icons, CC0' : 'Custom Brand Icons, MIT'})`);
+    lines.push(`- ${name}.svg: ${url} (${url.includes('simple-icons') ? 'Simple Icons, CC0' : 'Custom Brand Icons, MIT'})`);
     console.log('mark', name);
 }
 await writeFile(resolve(src, 'img/marks/SOURCES.md'), lines.join('\n') + '\n');
